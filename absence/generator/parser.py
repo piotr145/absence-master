@@ -24,8 +24,8 @@ class HTMLStatefulParser(HTMLParser):
     Use simple state machine to handle different stages of parsing
     """
     def __init__(self):
-        self.state = 'start'
         super().__init__()
+        self.state = 'start'
 
     def handle_starttag(self, tag, attrs):
         try:
@@ -58,10 +58,10 @@ class LibrusParser(HTMLStatefulParser):
     nb_hour_re = re.compile(r'.*Godzina lekcyjna: ([0-9]+)\<')
 
     def __init__(self):
+        super().__init__()
         self.results = []
         self.hours = []
         self.date = None
-        super().__init__()
 
     def handle_starttag_state_start(self, tag, attrs):
         self.hours = []
@@ -86,7 +86,6 @@ class LibrusParser(HTMLStatefulParser):
     def handle_starttag_state_main(self, tag, attrs):
         if tag == 'p':
             self.state = 'box'
-            return None
 
     def handle_endtag_state_main(self, tag):
         if tag == 'tr':
@@ -111,4 +110,7 @@ class LibrusParser(HTMLStatefulParser):
         if self.nb_type_re.match(data) is None:
             return None
         match = self.nb_hour_re.match(data)
-        self.hours.append(int(match.group(1)))
+        try:
+            self.hours.append(int(match.group(1)))
+        except AttributeError:
+            pass
