@@ -54,6 +54,8 @@ class LibrusParser(HTMLStatefulParser):
     Parse HTMLs from Librus Synergia
     """
     date_re = re.compile(r'([0-9]{4})-([0-9]{2})-([0-9]{2}) .*')
+    nb_type_re = re.compile(r'Rodzaj: nieobecność\<')
+    nb_hour_re = re.compile(r'.*Godzina lekcyjna: ([0-9]+)\<')
 
     def __init__(self):
         self.results = []
@@ -88,7 +90,8 @@ class LibrusParser(HTMLStatefulParser):
 
     def handle_endtag_state_main(self, tag):
         if tag == 'tr':
-            self.results.append(AbsenceRecord(self.date, self.hours))
+            if len(self.hours) > 0:
+                self.results.append(AbsenceRecord(self.date, self.hours))
             self.state = 'start'
 
     def handle_starttag_state_box(self, tag, attrs):
@@ -105,5 +108,7 @@ class LibrusParser(HTMLStatefulParser):
             self.state = 'main'
 
     def parse_box(self, data):
-        # todo: implement
-        pass
+        if self.nb_type_re.match(data) is None:
+            return None
+        match = self.nb_hour_re.match(data)
+        self.hours.append(int(match.group(1)))
