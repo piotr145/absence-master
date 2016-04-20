@@ -1,6 +1,3 @@
-from generator.parser import AbsenceRecord
-
-
 def make_excuses(records):
     """
     Produce list of excuses for given absence records
