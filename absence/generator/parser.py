@@ -14,7 +14,6 @@ class AbsenceRecord:
         :param hours: which hours have been skipped (increasing order)
         :type hours: [int]
         """
-        assert type(date) == datetime.date
         self.date = date
         self.hours = hours
 
@@ -65,9 +64,7 @@ class LibrusParser(HTMLStatefulParser):
 
     def handle_starttag_state_start(self, tag, attrs):
         self.hours = []
-        if len(attrs) != 1:
-            return None
-        if tag == 'tr':
+        if tag == 'tr' and len(attrs) == 1:
             if attrs[0] in [('class', 'line0'), ('class', 'line1')]:
                 self.state = 'date'
 
@@ -76,7 +73,10 @@ class LibrusParser(HTMLStatefulParser):
         if match is None:
             return None
         args = [int(match.group(x)) for x in range(1, 4)]
-        self.date = datetime.date(*args)
+        try:
+            self.date = datetime.date(*args)
+        except ValueError:
+            return None
         self.state = 'main'
 
     def handle_endtag_state_date(self, tag):
